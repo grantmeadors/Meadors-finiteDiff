@@ -31,18 +31,18 @@ signal = signalAmp * np.sin(2*np.pi*signalFreq*time)
 # Observed
 observed = signal + noise
 
-print observed
+#print observed
 
 # Frequency bins of the FFT
 fftBins = np.linspace(0, Fsample, Fsample*Tobs)
 
-print fftBins
+#print fftBins
 
 # FFT the data
 fftObserved = np.fft.fft(observed)
 asdObserved = np.absolute(fftObserved)
 
-print asdObserved
+#print asdObserved
 
 # Plot the FFT of the data
 def plotASD(xBins, asdData1, asdData2, fileName):
@@ -84,7 +84,12 @@ def diffStacker(dataToStack, Fsample, testFreq, stackHeight):
     paddedSum = np.pad(partSum, (0, diffInLength), 'constant', constant_values=(0,0))
     return paddedSum
 
-stackedObserved = diffStacker(observed, Fsample, signalFreq, 1)
+stackedObserved = diffStacker(observed, Fsample, signalFreq, 20)
+
+# FFT the stacked data
+fftStackedObserved = np.fft.fft(stackedObserved)
+asdStackedObserved = np.absolute(fftStackedObserved)
+
     
-plotASD(fftBins, asdObserved, 0.5*asdObserved, 'asdObserved.png')
-plotTD(time, 0*observed, stackedObserved, 'observed.png')
+plotASD(fftBins, asdObserved, asdStackedObserved, 'asdObserved.png')
+plotTD(time, observed, stackedObserved, 'observed.png')
