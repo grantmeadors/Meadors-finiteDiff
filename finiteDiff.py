@@ -45,27 +45,46 @@ asdObserved = np.absolute(fftObserved)
 print asdObserved
 
 # Plot the FFT of the data
-def plotASD(xBins, asdData, fileName):
+def plotASD(xBins, asdData1, asdData2, fileName):
     fig = plt.figure()
-    plt.semilogy(fftBins,asdObserved)
+    plt.semilogy(fftBins,asdData1)
+    plt.semilogy(fftBins,asdData2)
     plt.axis([0,2*signalFreq,noiseAmp/1e2, signalAmp*1e8])
     plt.xlabel('Frequency [Hz]')
     plt.ylabel('Amplitude spectral density [sqrt(Hz)]')
-    plt.title('Fourier domain')
+    plt.title('Fourier domain: signal and enhanced signal')
     fig.savefig(fileName)
     plt.close()
 
-def plotTD(temporal, observable, fileName):
+def plotTD(temporal, observable1, observable2, fileName):
     fig = plt.figure()
-    plt.plot(temporal, observable)
+    plt.plot(temporal, observable1)
+    plt.plot(temporal, observable2)
     plt.axis([0, 4.0/signalFreq, -2.0*signalAmp, 2.0*signalAmp])
     plt.xlabel('Time [s]')
     plt.ylabel('(dimensionless)')
-    plt.title('Time domain')
+    plt.title('Time domain: signal and enhanced signal')
     fig.savefig(fileName)
     plt.close()
 
-plotASD(fftBins, asdObserved, 'asdObserved.png')
-plotTD(time, observed, 'observed.png')
 
 # See if stacking the derivatives helps any
+def differenceTaker(dataToStack, Fsample, testFreq):
+    return -1/(2*np.pi*testFreq) * np.diff(np.diff(dataToStack))
+
+def diffStacker(dataToStack, Fsample, testFreq, stackHeight):
+    secondDerivativeInput = dataToStack
+    partSum = dataToStack
+    print 'Stacking'
+    for x in range(0,stackHeight):
+        thisSecondDerivative = differenceTaker(secondDerivativeInput, Fsample, testFreq)
+        secondDerivativeInput = thisSecondDerivative
+        partSum = partSum[:-2] + thisSecondDerivative
+    diffInLength = len(dataToStack) - len(partSum)
+    paddedSum = np.pad(partSum, (0, diffInLength), 'constant', constant_values=(0,0))
+    return paddedSum
+
+stackedObserved = diffStacker(observed, Fsample, signalFreq, 1)
+    
+plotASD(fftBins, asdObserved, 0.5*asdObserved, 'asdObserved.png')
+plotTD(time, 0*observed, stackedObserved, 'observed.png')
