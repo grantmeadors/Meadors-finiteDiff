@@ -70,7 +70,9 @@ def plotTD(temporal, observable1, observable2, fileName):
 
 # See if stacking the derivatives helps any
 def differenceTaker(dataToStack, Fsample, testFreq):
-    return -1/(2*np.pi*testFreq) * np.diff(np.diff(dataToStack))
+    #out = -1/(2*np.pi*testFreq) * np.diff(np.diff(dataToStack))
+    out = -(Fsample/(2*np.pi*testFreq))**2 * np.diff(np.diff(dataToStack))
+    return out
 
 def diffStacker(dataToStack, Fsample, testFreq, stackHeight):
     secondDerivativeInput = dataToStack
@@ -80,11 +82,12 @@ def diffStacker(dataToStack, Fsample, testFreq, stackHeight):
         thisSecondDerivative = differenceTaker(secondDerivativeInput, Fsample, testFreq)
         secondDerivativeInput = thisSecondDerivative
         partSum = partSum[:-2] + thisSecondDerivative
+        #partSum = thisSecondDerivative
     diffInLength = len(dataToStack) - len(partSum)
-    paddedSum = np.pad(partSum, (0, diffInLength), 'constant', constant_values=(0,0))
+    paddedSum = 1/float(1+stackHeight) * np.pad(partSum, (0, diffInLength), 'constant', constant_values=(0,0))
     return paddedSum
 
-stackedObserved = diffStacker(observed, Fsample, signalFreq, 20)
+stackedObserved = diffStacker(observed, Fsample, signalFreq, 1)
 
 # FFT the stacked data
 fftStackedObserved = np.fft.fft(stackedObserved)
