@@ -44,14 +44,28 @@ asdObserved = np.absolute(fftObserved)
 
 print asdObserved
 
-# Plot the data
+# Plot the FFT of the data
 def plotASD(xBins, asdData, fileName):
     fig = plt.figure()
     plt.semilogy(fftBins,asdObserved)
-    plt.axis([0,500,1e-2,1e10])
+    plt.axis([0,2*signalFreq,noiseAmp/1e2, signalAmp*1e8])
     plt.xlabel('Frequency [Hz]')
-    plt.title('Amplitude spectral density')
+    plt.ylabel('Amplitude spectral density [sqrt(Hz)]')
+    plt.title('Fourier domain')
+    fig.savefig(fileName)
+    plt.close()
+
+def plotTD(temporal, observable, fileName):
+    fig = plt.figure()
+    plt.plot(temporal, observable)
+    plt.axis([0, 4.0/signalFreq, -2.0*signalAmp, 2.0*signalAmp])
+    plt.xlabel('Time [s]')
+    plt.ylabel('(dimensionless)')
+    plt.title('Time domain')
     fig.savefig(fileName)
     plt.close()
 
 plotASD(fftBins, asdObserved, 'asdObserved.png')
+plotTD(time, observed, 'observed.png')
+
+# See if stacking the derivatives helps any
